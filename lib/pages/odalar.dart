@@ -18,27 +18,55 @@ class Odalar extends StatefulWidget {
 }
 
 class _OdalarState extends State<Odalar> {
-  int whiteTimeInMenutes = 100;
-  int blackTimeInMenutes = 100;
+  TextEditingController _controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("odalar"),
+        title: Text(
+          "odalar",
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
+        backgroundColor: Colors.black,
       ),
       body: Consumer<GameProvider>(builder: (context, gameProvider, child) {
-        return Column(
-          children: [
-            Text("oyuna başlamak için tıklayın"),
-            ElevatedButton(
-              onPressed: () {
-                // navigate to game screen
-                playGame(gameProvider: gameProvider);
-              },
-              child: Text('Play'),
-            ),
-          ],
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: "5 harflik birkelime giriniz",
+                    hintStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.grey,
+                    )),
+                  ),
+                  style: TextStyle(
+                      color: Colors.black), // Yazı rengini beyaz yapar
+                ),
+              ),
+              SizedBox(
+                height: 15,
+              ),
+              Text("oyuna başlamak için tıklayın"),
+              SizedBox(
+                height: 15,
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // navigate to game screen
+                  playGame(gameProvider: gameProvider);
+                },
+                child: Text('Play'),
+              ),
+            ],
+          ),
         );
       }),
     );
@@ -48,100 +76,63 @@ class _OdalarState extends State<Odalar> {
     required GameProvider gameProvider,
   }) async {
     final userModel = context.read<AuthenticationProvider>().userModel;
-    // check if is custome time
-    if (false) {
-      // check all timer are greater than 0
-      if (whiteTimeInMenutes <= 0 || blackTimeInMenutes <= 0) {
-        // show snackbar
-        print("zaman 0 olamaz");
-        return;
-      }
 
-      // 1. start loading dialog
-      gameProvider.setIsLoading(value: true);
+    print(widget.gameTime);
+    final String incrementalTime = "15";
 
-      // 2. save time and player color for both players
-      await gameProvider
-          .setGameTime(
-        newSavedWhitesTime: whiteTimeInMenutes.toString(),
-        newSavedBlacksTime: blackTimeInMenutes.toString(),
-      )
-          .whenComplete(() {
-        //oyun pc ile oynanıyorsa içeri gir
-        if (gameProvider.vsComputer) {
-          gameProvider.setIsLoading(value: false);
-          // 3. navigate to game screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-          );
-        } else {
-          // search for players
-        }
-      });
-    } else {
-      // not custom time
-      // check if its incremental time
-      // get the value after the + sign
-      print(widget.gameTime);
-      final String incrementalTime = "999";
+    // get the value before the + sign
+    final String whitetime = _controller.text;
+    final String blacktime = _controller.text;
 
-      // get the value before the + sign
-      final String gameTime = "999";
-
-      // check if incremental is equal to 0
-      if (incrementalTime != '0') {
-        // save the incremental value
-        gameProvider.setIncrementalValue(value: int.parse(incrementalTime));
-      }
-
-      gameProvider.setIsLoading(value: true);
-
-      await gameProvider
-          .setGameTime(
-        newSavedWhitesTime: gameTime,
-        newSavedBlacksTime: gameTime,
-      )
-          .whenComplete(() {
-        if (gameProvider.vsComputer) {
-          gameProvider.setIsLoading(value: false);
-          // 3. navigate to game screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-          );
-        } else {
-          // search for players
-          gameProvider.searchPlayer(
-              userModel: userModel!,
-              onSuccess: () {
-                if (gameProvider.waitingText == Constants.searchingPlayerText) {
-                  gameProvider.checkIfOpponentJoined(
-                    userModel: userModel,
-                    onSuccess: () {
-                      gameProvider.setIsLoading(value: false);
-                      print("aaaa");
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-                      );
-                    },
-                  );
-                } else {
-                  gameProvider.setIsLoading(value: false);
-                  // navigate to gameScreen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-                  );
-                }
-              },
-              onFail: (error) {
-                gameProvider.setIsLoading(value: false);
-                print(error);
-              });
-        }
-      });
+    // check if incremental is equal to 0
+    if (incrementalTime != '0') {
+      // save the incremental value
+      gameProvider.setIncrementalValue(value: int.parse(incrementalTime));
     }
+
+    await gameProvider
+        .setGameTime(
+      newSavedWhitesTime: whitetime,
+      newSavedBlacksTime: blacktime,
+    )
+        .whenComplete(() {
+      if (gameProvider.vsComputer) {
+        gameProvider.setIsLoading(value: false);
+        // 3. navigate to game screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Oyun_ekrani()),
+        );
+      } else {
+        // search for players
+        gameProvider.searchPlayer(
+            userModel: userModel!,
+            onSuccess: () {
+              if (gameProvider.waitingText == Constants.searchingPlayerText) {
+                gameProvider.checkIfOpponentJoined(
+                  userModel: userModel,
+                  onSuccess: () {
+                    gameProvider.setIsLoading(value: false);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Oyun_ekrani()),
+                    );
+                  },
+                );
+              } else {
+                gameProvider.setIsLoading(value: false);
+                // navigate to gameScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => Oyun_ekrani()),
+                );
+              }
+            },
+            onFail: (error) {
+              gameProvider.setIsLoading(value: false);
+              print(error);
+            });
+      }
+    });
   }
 }

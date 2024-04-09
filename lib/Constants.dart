@@ -66,16 +66,3 @@ enum PlayerColor {
   white,
   black,
 }
-
-enum GameDifficulty {
-  easy,
-  medium,
-  hard,
-}
-
-enum SignType {
-  emailAndPassword,
-  guest,
-  google,
-  facebook,
-}

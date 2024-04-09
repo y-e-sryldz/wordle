@@ -31,12 +31,12 @@ class GameProvider extends ChangeNotifier {
 
   String get gameId => _gameId;
 
-  Duration _whitesTime = Duration.zero;
-  Duration _blacksTime = Duration.zero;
+  String _whitesTime = '';
+  String _blacksTime = '';
 
   // saved time
-  Duration _savedWhitesTime = Duration.zero;
-  Duration _savedBlacksTime = Duration.zero;
+  String _savedWhitesTime = '';
+  String _savedBlacksTime = '';
 
   bool get playWhitesTimer => _playWhitesTimer;
   bool get playBlacksTimer => _playBlacksTimer;
@@ -57,11 +57,11 @@ class GameProvider extends ChangeNotifier {
   int get incrementalValue => _incrementalValue;
   int get player => _player;
 
-  Duration get whitesTime => _whitesTime;
-  Duration get blacksTime => _blacksTime;
+  String get whitesTime => _whitesTime;
+  String get blacksTime => _blacksTime;
 
-  Duration get savedWhitesTime => _savedWhitesTime;
-  Duration get savedBlacksTime => _savedBlacksTime;
+  String get savedWhitesTime => _savedWhitesTime;
+  String get savedBlacksTime => _savedBlacksTime;
 
   // get method
   bool get vsComputer => _vsComputer;
@@ -163,98 +163,24 @@ class GameProvider extends ChangeNotifier {
     required String newSavedBlacksTime,
   }) async {
     // save the times
-    _savedWhitesTime = Duration(minutes: int.parse(newSavedWhitesTime));
-    _savedBlacksTime = Duration(minutes: int.parse(newSavedBlacksTime));
+    _savedWhitesTime = newSavedWhitesTime;
+    _savedBlacksTime = newSavedBlacksTime;
+    print(_savedWhitesTime);
+    print(_savedBlacksTime);
     notifyListeners();
     // set times
     setWhitesTime(_savedWhitesTime);
     setBlacksTime(_savedBlacksTime);
   }
 
-  void setWhitesTime(Duration time) {
+  void setWhitesTime(String time) {
     _whitesTime = time;
     notifyListeners();
   }
 
-  void setBlacksTime(Duration time) {
+  void setBlacksTime(String time) {
     _blacksTime = time;
     notifyListeners();
-  }
-
-  // pause whites timer
-  void pauseWhitesTimer() {
-    if (_whitesTimer != null) {
-      _whitesTime += Duration(seconds: _incrementalValue);
-      _whitesTimer!.cancel();
-      notifyListeners();
-    }
-  }
-
-  // pause blacks timer
-  void pauseBlacksTimer() {
-    if (_blacksTimer != null) {
-      _blacksTime += Duration(seconds: _incrementalValue);
-      _blacksTimer!.cancel();
-      notifyListeners();
-    }
-  }
-
-  // start blacks timer
-  void startBlacksTimer({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    _blacksTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _blacksTime = _blacksTime - const Duration(seconds: 1);
-      notifyListeners();
-
-      if (_blacksTime <= Duration.zero) {
-        // blacks timeout - black has lost the game
-        _blacksTimer!.cancel();
-        notifyListeners();
-
-        // show game over dialog
-        if (context.mounted) {
-          gameOverDialog(
-            context: context,
-            stockfish: stockfish,
-            timeOut: true,
-            whiteWon: true,
-            onNewGame: onNewGame,
-          );
-        }
-      }
-    });
-  }
-
-  // start blacks timer
-  void startWhitesTimer({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    _whitesTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _whitesTime = _whitesTime - const Duration(seconds: 1);
-      notifyListeners();
-
-      if (_whitesTime <= Duration.zero) {
-        // whites timeout - white has lost the game
-        _whitesTimer!.cancel();
-        notifyListeners();
-
-        // show game over dialog
-        if (context.mounted) {
-          gameOverDialog(
-            context: context,
-            stockfish: stockfish,
-            timeOut: true,
-            whiteWon: false,
-            onNewGame: onNewGame,
-          );
-        }
-      }
-    });
   }
 
   void gameOverListerner({
@@ -264,8 +190,6 @@ class GameProvider extends ChangeNotifier {
   }) {
     if (game.gameOver) {
       // pause the timers
-      pauseWhitesTimer();
-      pauseBlacksTimer();
 
       // cancel the gameStreamsubscription if its not null
       if (gameStreamSubScreiption != null) {
@@ -294,7 +218,7 @@ class GameProvider extends ChangeNotifier {
     required Function onNewGame,
   }) {
     // stop stockfish engine
-    
+
     String resultsToShow = '';
     int whitesScoresToShow = 0;
     int blacksSCoresToShow = 0;
@@ -391,17 +315,17 @@ class GameProvider extends ChangeNotifier {
     required Function(String) onFail,
   }) async {
     try {
-      // get all available games
+      // mevcut tüm oyunları al
       final availableGames =
           await firebaseFirestore.collection(Constants.availableGames).get();
 
-      //check if there are any available games
+      //mevcut oyun olup olmadığını kontrol edin
       if (availableGames.docs.isNotEmpty) {
         final List<DocumentSnapshot> gamesList = availableGames.docs
             .where((element) => element[Constants.isPlaying] == false)
             .toList();
 
-        // check if there are no games where isPlaying == false
+        // isPlaying == false olan herhangi bir oyun olup olmadığını kontrol edin
         if (gamesList.isEmpty) {
           _waitingText = Constants.searchingPlayerText;
           notifyListeners();
@@ -425,7 +349,7 @@ class GameProvider extends ChangeNotifier {
       } else {
         _waitingText = Constants.searchingPlayerText;
         notifyListeners();
-        // we don not have any available games - create a game
+        // elimizde herhangi bir oyun yok - bir oyun oluştur
         createNewGameInFireStore(
           userModel: userModel,
           onSuccess: onSuccess,
@@ -439,7 +363,7 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
-  // create a game
+  // oyun oluştur
   void createNewGameInFireStore({
     required UserModel userModel,
     required Function onSuccess,
@@ -465,8 +389,8 @@ class GameProvider extends ChangeNotifier {
         Constants.isPlaying: false,
         Constants.gameId: gameId,
         Constants.dateCreated: DateTime.now().microsecondsSinceEpoch.toString(),
-        Constants.whitesTime: _savedWhitesTime.toString(),
         Constants.blacksTime: _savedBlacksTime.toString(),
+        Constants.whitesTime: _savedWhitesTime.toString()
       });
 
       onSuccess();
@@ -501,13 +425,13 @@ class GameProvider extends ChangeNotifier {
     required Function(String) onFail,
   }) async {
     try {
-      // get our created game
+      // yarattığımız oyunu edinin
       final myGame = await firebaseFirestore
           .collection(Constants.availableGames)
           .doc(userModel.uid)
           .get();
 
-      // get data from the game we are joining
+      // Katıldığımız oyundan veri al
       _gameCreatorUid = game[Constants.gameCreatorUid];
       _gameCreatorName = game[Constants.gameCreatorName];
       _gameCreatorPhoto = game[Constants.gameCreatorImage];
@@ -520,11 +444,11 @@ class GameProvider extends ChangeNotifier {
       notifyListeners();
 
       if (myGame.exists) {
-        // delete our created game since we are joing another game
+        // Başka bir oyuna katılacağımız için oluşturduğunuz oyunu silin
         await myGame.reference.delete();
       }
 
-      // initialize the gameModel
+      // gameModel'i başlat
       final gameModel = GameModel(
         gameId: gameId,
         gameCreatorUid: _gameCreatorUid,
@@ -543,7 +467,7 @@ class GameProvider extends ChangeNotifier {
         moves: state.moves.toList(),
       );
 
-      // create a game controller directory in fireStore
+      // fireStore'da bir oyun kumandası dizini oluşturun
       await firebaseFirestore
           .collection(Constants.runningGames)
           .doc(gameId)
@@ -551,7 +475,7 @@ class GameProvider extends ChangeNotifier {
           .doc(gameId)
           .set(gameModel.toMap());
 
-      // create a new game directory in fireStore
+      // fireStore'da yeni bir oyun dizini oluşturun
       await firebaseFirestore
           .collection(Constants.runningGames)
           .doc(gameId)
@@ -569,7 +493,7 @@ class GameProvider extends ChangeNotifier {
         Constants.gameScore: '0-0',
       });
 
-      // update game settings depending on the data of the game we are joining
+      // Katıldığımız oyunun verilerine göre oyun ayarlarını güncelleyin
       await setGameDataAndSettings(game: game, userModel: userModel);
 
       onSuccess();
@@ -585,13 +509,13 @@ class GameProvider extends ChangeNotifier {
     required UserModel userModel,
     required Function() onSuccess,
   }) async {
-    // stream firestore if the player has joined
+    // Oyuncu katılmışsa firestore akışını gerçekleştirin
     isPlayingStreamSubScription = firebaseFirestore
         .collection(Constants.availableGames)
         .doc(userModel.uid)
         .snapshots()
         .listen((event) async {
-      // chech if the game exist
+      // oyunun mevcut olup olmadığını kontrol edin
       if (event.exists) {
         final DocumentSnapshot game = event;
 
@@ -599,7 +523,7 @@ class GameProvider extends ChangeNotifier {
         if (game[Constants.isPlaying]) {
           isPlayingStreamSubScription!.cancel();
           await Future.delayed(const Duration(milliseconds: 100));
-          // get data from the game we are joining
+          // Katıldığımız oyundan veri al
           _gameCreatorUid = game[Constants.gameCreatorUid];
           _gameCreatorName = game[Constants.gameCreatorName];
           _gameCreatorPhoto = game[Constants.gameCreatorImage];
@@ -625,28 +549,15 @@ class GameProvider extends ChangeNotifier {
         .collection(Constants.availableGames)
         .doc(game[Constants.gameCreatorUid]);
 
-    // time - 0:10:00.0000000
-    List<String> whitesTimeParts = game[Constants.whitesTime].split(':');
-    List<String> blacksTimeParts = game[Constants.blacksTime].split(':');
-
-    int whitesGameTime =
-        int.parse(whitesTimeParts[0]) * 60 + int.parse(whitesTimeParts[1]);
-    int blacksGamesTime =
-        int.parse(blacksTimeParts[0]) * 60 + int.parse(blacksTimeParts[1]);
-
-    // set game time
-    await setGameTime(
-      newSavedWhitesTime: whitesGameTime.toString(),
-      newSavedBlacksTime: blacksGamesTime.toString(),
-    );
-
-    // update the created game in fireStore
+    
+    // FireStore'da oluşturulan oyunu güncelleyin
     await opponentsGame.update({
       Constants.isPlaying: true,
       Constants.uid: userModel.uid,
       Constants.name: userModel.name,
       Constants.photoUrl: userModel.image,
       Constants.userRating: userModel.playerRating,
+      Constants.whitesTime: _savedWhitesTime.toString(),
     });
 
     notifyListeners();
@@ -694,9 +605,6 @@ class GameProvider extends ChangeNotifier {
               bool result = makeSquaresMove(convertedMove);
               if (result) {
                 setSquaresState().whenComplete(() {
-                  pauseBlacksTimer();
-                  startWhitesTimer(context: context, onNewGame: () {});
-
                   gameOverListerner(context: context, onNewGame: () {});
                 });
               }
@@ -707,7 +615,6 @@ class GameProvider extends ChangeNotifier {
           // not the game creator
           _isWhitesTurn = false;
 
-        
           notifyListeners();
         }
       }
@@ -749,8 +656,5 @@ class GameProvider extends ChangeNotifier {
     required BuildContext context,
     required Move move,
     required bool isWhitesMove,
-  }) async {
-   
-   
-  }
+  }) async {}
 }
