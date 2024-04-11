@@ -390,7 +390,7 @@ class GameProvider extends ChangeNotifier {
         Constants.gameId: gameId,
         Constants.dateCreated: DateTime.now().microsecondsSinceEpoch.toString(),
         Constants.blacksTime: _savedBlacksTime.toString(),
-        Constants.whitesTime: _savedWhitesTime.toString()
+        Constants.whitesTime: '',
       });
 
       onSuccess();
@@ -549,7 +549,6 @@ class GameProvider extends ChangeNotifier {
         .collection(Constants.availableGames)
         .doc(game[Constants.gameCreatorUid]);
 
-    
     // FireStore'da oluşturulan oyunu güncelleyin
     await opponentsGame.update({
       Constants.isPlaying: true,
@@ -570,86 +569,6 @@ class GameProvider extends ChangeNotifier {
   bool get isWhitesTurn => _isWhitesTurn;
 
   StreamSubscription? gameStreamSubScreiption;
-
-  // listen for game changes in fireStore
-  Future<void> listenForGameChanges({
-    required BuildContext context,
-    required UserModel userModel,
-  }) async {
-    CollectionReference gameCollectionReference = firebaseFirestore
-        .collection(Constants.runningGames)
-        .doc(gameId)
-        .collection(Constants.game);
-
-    gameStreamSubScreiption =
-        gameCollectionReference.snapshots().listen((event) {
-      if (event.docs.isNotEmpty) {
-        // get the game
-        final DocumentSnapshot game = event.docs.first;
-
-        // check if we are white - this means we are the game creator
-        if (game[Constants.gameCreatorUid] == userModel.uid) {
-          // check if is white's turn
-          if (game[Constants.isWhitesTurn]) {
-            _isWhitesTurn = true;
-
-            // check if blacksCurrentMove is not empty or equal the old move - means black has played his move
-            // this means its our tuen to play
-            if (game[Constants.blacksCurrentMove] != blacksMove) {
-              // update the whites UI
-
-              Move convertedMove = convertMoveStringToMove(
-                moveString: game[Constants.blacksCurrentMove],
-              );
-
-              bool result = makeSquaresMove(convertedMove);
-              if (result) {
-                setSquaresState().whenComplete(() {
-                  gameOverListerner(context: context, onNewGame: () {});
-                });
-              }
-            }
-            notifyListeners();
-          }
-        } else {
-          // not the game creator
-          _isWhitesTurn = false;
-
-          notifyListeners();
-        }
-      }
-    });
-  }
-
-  // convert move string to move format
-  Move convertMoveStringToMove({required String moveString}) {
-    // Split the move string intp its components
-    List<String> parts = moveString.split('-');
-
-    // Extract 'from' and 'to'
-    int from = int.parse(parts[0]);
-    int to = int.parse(parts[1].split('[')[0]);
-
-    // Extract 'promo' and 'piece' if available
-    String? promo;
-    String? piece;
-    if (moveString.contains('[')) {
-      String extras = moveString.split('[')[1].split(']')[0];
-      List<String> extraList = extras.split(',');
-      promo = extraList[0];
-      if (extraList.length > 1) {
-        piece = extraList[1];
-      }
-    }
-
-    // Create and return a new Move object
-    return Move(
-      from: from,
-      to: to,
-      promo: promo,
-      piece: piece,
-    );
-  }
 
   // play move and save to fireStore
   Future<void> playMoveAndSaveToFireStore({

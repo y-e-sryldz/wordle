@@ -17,19 +17,26 @@ class Oyun_ekrani extends StatefulWidget {
 }
 
 class _Oyun_ekraniState extends State<Oyun_ekrani> {
-  late String _word;
 
   @override
   void initState() {
-    final r = Random().nextInt(words.length);
-    _word = words[r];
-
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-      Provider.of<Controller>(context, listen: false)
-          .setCorrectWord(word: _word);
-    });
+    _fetchWord();
 
     super.initState();
+  }
+
+  void _fetchWord() async {
+    String _word = await kelimemiz();
+    if (_word != null) {
+      setState(() {
+        WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+          Provider.of<Controller>(context, listen: false)
+              .setCorrectWord(word: _word);
+        });
+      });
+    } else {
+      // Hata durumunda yapılacak işlemler
+    }
   }
 
   @override

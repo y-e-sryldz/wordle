@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wordle/constants/words.dart';
 import 'package:wordle/pages/Hesap_olustur.dart';
 import 'package:wordle/pages/Oyun_ekrani.dart';
 import 'package:wordle/pages/odalar.dart';
@@ -27,35 +28,37 @@ class _Giris_ekraniState extends State<Giris_ekrani> {
   // signIn user
   void signInUser() async {
     final authProvider = context.read<AuthenticationProvider>();
-    
-      UserCredential? userCredential =
-          await authProvider.signInUserWithEmailAndPassword(
-        email: username,
-        password: password,
-      );
 
-      if (userCredential != null) {
-        // 1. check if this user exist in firestore
-        bool userExist = await authProvider.checkUserExist();
+    UserCredential? userCredential =
+        await authProvider.signInUserWithEmailAndPassword(
+      email: username,
+      password: password,
+    );
 
-        if (userExist) {
-          // 2. get user data from firestore
-          await authProvider.getUserDataFromFireStore();
+    if (userCredential != null) {
+      // 1. check if this user exist in firestore
+      bool userExist = await authProvider.checkUserExist();
 
-          // 3. save user data to shared preferenced - local storage
-          await authProvider.saveUserDataToSharedPref();
+      if (userExist) {
+        // 2. get user data from firestore
+        await authProvider.getUserDataFromFireStore();
 
-          // 4. save this user as signed in
-          await authProvider.setSignedIn();
+        // 3. save user data to shared preferenced - local storage
+        await authProvider.saveUserDataToSharedPref();
 
+        // 4. save this user as signed in
+        await authProvider.setSignedIn();
 
-          authProvider.setIsLoading(value: false);
+        authProvider.setIsLoading(value: false);
 
-          // 5. navigate to home screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Odalar(isCustomTime: true,)),
-          );
+        // 5. navigate to home screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => Odalar(
+                    isCustomTime: true,
+                  )),
+        );
       }
     } else {
       print("Lütfen tüm alanları doldurun");
@@ -173,6 +176,7 @@ class _Giris_ekraniState extends State<Giris_ekrani> {
                                 });
                               } else {
                                 signInUser();
+                                
                               }
                             },
                             child: Container(
