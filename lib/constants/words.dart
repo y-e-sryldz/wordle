@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:wordle/Constants.dart';
 import 'package:wordle/models/user_model.dart';
 
-Future<String> kelimemiz() async {
+Future<String> kelimemiz({
+  required UserModel userModel,
+}) async {
   final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
 
   final availableGames =
@@ -18,18 +20,15 @@ Future<String> kelimemiz() async {
       .doc(gamesList.first[Constants.gameCreatorUid])
       .get();
 
-  var userData = opponentsGame.data(); // Veritabanından gelen veri
-
-  var userModel = UserModel.fromMap(userData!); // UserModel'e dönüştürme
-
   if (opponentsGame.exists) {
     var gameCreatorName = opponentsGame.data()?[Constants.gameCreatorName];
     print('bunlar aradıkların');
     print(userModel.name);
     print(gameCreatorName);
 
-    if (userModel.name.toString() == gameCreatorName.toString()) {
+    if (userModel.name == gameCreatorName) {
       var whitesTime = opponentsGame.data()?[Constants.whitesTime];
+      print("ALDIĞIN KELİMEEEE" + whitesTime);
       return whitesTime;
     } else {
       var blacksTime = opponentsGame.data()?[Constants.blacksTime];

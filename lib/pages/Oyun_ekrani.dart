@@ -6,6 +6,7 @@ import 'package:wordle/components/Grid.dart';
 import 'package:wordle/components/keyboard_row.dart';
 import 'package:wordle/constants/words.dart';
 import 'package:wordle/data/keys_map.dart';
+import 'package:wordle/providers/authentication_provider.dart';
 
 import '../controller.dart';
 
@@ -26,7 +27,10 @@ class _Oyun_ekraniState extends State<Oyun_ekrani> {
   }
 
   void _fetchWord() async {
-    String _word = await kelimemiz();
+
+    final userModel = context.read<AuthenticationProvider>().userModel;
+
+    String _word = await kelimemiz(userModel: userModel!);
     if (_word != null) {
       setState(() {
         WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
