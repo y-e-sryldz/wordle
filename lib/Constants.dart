@@ -28,10 +28,10 @@ class Constants {
   static const String userRating = 'userRating';
 
   static const String availableGames = 'availableGames';
-  static const String photoUrl = 'photoUrl';
+  static const String ikinci_kazanan = 'ikinci_kazanan';
   static const String gameCreatorUid = 'gameCreatorUid';
   static const String gameCreatorName = 'gameCreatorName';
-  static const String gameCreatorImage = 'gameCreatorImage';
+  static const String birinci_kazanan = 'birinci_kazanan';
   static const String isPlaying = 'isPlaying';
   static const String gameId = 'gameId';
   static const String dateCreated = 'dateCreated';

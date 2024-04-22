@@ -183,32 +183,6 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void gameOverListerner({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    if (game.gameOver) {
-      // pause the timers
-
-      // cancel the gameStreamsubscription if its not null
-      if (gameStreamSubScreiption != null) {
-        gameStreamSubScreiption!.cancel();
-      }
-
-      // show game over dialog
-      if (context.mounted) {
-        gameOverDialog(
-          context: context,
-          stockfish: stockfish,
-          timeOut: false,
-          whiteWon: false,
-          onNewGame: onNewGame,
-        );
-      }
-    }
-  }
-
   // game over dialog
   void gameOverDialog({
     required BuildContext context,
@@ -380,11 +354,11 @@ class GameProvider extends ChangeNotifier {
           .set({
         Constants.uid: '',
         Constants.name: '',
-        Constants.photoUrl: '',
+        Constants.ikinci_kazanan: false,
         Constants.userRating: 1200,
         Constants.gameCreatorUid: userModel.uid,
         Constants.gameCreatorName: userModel.name,
-        Constants.gameCreatorImage: userModel.image,
+        Constants.birinci_kazanan: false,
         Constants.gameCreatorRating: userModel.playerRating,
         Constants.isPlaying: false,
         Constants.gameId: gameId,
@@ -434,7 +408,7 @@ class GameProvider extends ChangeNotifier {
       // Katıldığımız oyundan veri al
       _gameCreatorUid = game[Constants.gameCreatorUid];
       _gameCreatorName = game[Constants.gameCreatorName];
-      _gameCreatorPhoto = game[Constants.gameCreatorImage];
+      _gameCreatorPhoto = game[Constants.birinci_kazanan];
       _gameCreatorRating = game[Constants.gameCreatorRating];
       _userId = userModel.uid;
       _userName = userModel.name;
@@ -482,7 +456,7 @@ class GameProvider extends ChangeNotifier {
           .set({
         Constants.gameCreatorUid: gameCreatorUid,
         Constants.gameCreatorName: gameCreatorName,
-        Constants.gameCreatorImage: gameCreatorPhoto,
+        Constants.birinci_kazanan: gameCreatorPhoto,
         Constants.gameCreatorRating: gameCreatorRating,
         Constants.userId: userId,
         Constants.userName: userName,
@@ -526,10 +500,10 @@ class GameProvider extends ChangeNotifier {
           // Katıldığımız oyundan veri al
           _gameCreatorUid = game[Constants.gameCreatorUid];
           _gameCreatorName = game[Constants.gameCreatorName];
-          _gameCreatorPhoto = game[Constants.gameCreatorImage];
+          _gameCreatorPhoto = game[Constants.birinci_kazanan];
           _userId = game[Constants.uid];
           _userName = game[Constants.name];
-          _userPhoto = game[Constants.photoUrl];
+          _userPhoto = game[Constants.ikinci_kazanan];
 
           notifyListeners();
 
@@ -539,7 +513,7 @@ class GameProvider extends ChangeNotifier {
     });
   }
 
-  // set game data and settings
+  // oyun verilerini ve ayarlarını belirle
   Future<void> setGameDataAndSettings({
     required DocumentSnapshot<Object?> game,
     required UserModel userModel,
@@ -554,7 +528,7 @@ class GameProvider extends ChangeNotifier {
       Constants.isPlaying: true,
       Constants.uid: userModel.uid,
       Constants.name: userModel.name,
-      Constants.photoUrl: userModel.image,
+      Constants.ikinci_kazanan: userModel.image,
       Constants.userRating: userModel.playerRating,
       Constants.whitesTime: _savedWhitesTime.toString(),
     });
@@ -562,18 +536,4 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _isWhitesTurn = true;
-  String blacksMove = '';
-  String whitesMove = '';
-
-  bool get isWhitesTurn => _isWhitesTurn;
-
-  StreamSubscription? gameStreamSubScreiption;
-
-  // play move and save to fireStore
-  Future<void> playMoveAndSaveToFireStore({
-    required BuildContext context,
-    required Move move,
-    required bool isWhitesMove,
-  }) async {}
 }
