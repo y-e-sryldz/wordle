@@ -375,7 +375,7 @@ class GameProvider extends ChangeNotifier {
 
   String _gameCreatorUid = '';
   String _gameCreatorName = '';
-  String _gameCreatorPhoto = '';
+  bool _gameCreatorPhoto = false;
   int _gameCreatorRating = 1200;
   String _userId = '';
   String _userName = '';
@@ -384,7 +384,7 @@ class GameProvider extends ChangeNotifier {
 
   String get gameCreatorUid => _gameCreatorUid;
   String get gameCreatorName => _gameCreatorName;
-  String get gameCreatorPhoto => _gameCreatorPhoto;
+  bool get gameCreatorPhoto => _gameCreatorPhoto;
   int get gameCreatorRating => _gameCreatorRating;
   String get userId => _userId;
   String get userName => _userName;
@@ -528,7 +528,7 @@ class GameProvider extends ChangeNotifier {
       Constants.isPlaying: true,
       Constants.uid: userModel.uid,
       Constants.name: userModel.name,
-      Constants.ikinci_kazanan: userModel.image,
+      Constants.ikinci_kazanan: false,
       Constants.userRating: userModel.playerRating,
       Constants.whitesTime: _savedWhitesTime.toString(),
     });

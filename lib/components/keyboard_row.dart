@@ -35,7 +35,7 @@ class KeyboardRow extends StatelessWidget {
                       child: InkWell(
                           onTap: () {
                             Provider.of<Controller>(context, listen: false)
-                                .setKeyTapped(value: e.key);
+                                .setKeyTapped(value: e.key,context: context);
                           },
                           child: Center(child: Text(e.key))))),
             ),

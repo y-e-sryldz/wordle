@@ -1,7 +1,7 @@
-import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:wordle/Constants.dart';
 import 'package:wordle/constants/answer_stages.dart';
 import 'package:wordle/models/tile_models.dart';
@@ -16,10 +16,10 @@ class Controller extends ChangeNotifier {
 
   setCorrectWord({required String word}) => correctWord = word;
 
-  setKeyTapped({required String value}) {
+  setKeyTapped({required BuildContext context, required String value}) {
     if (value == "ENTER") {
       if (currenttile == 5 * (currentRow + 1)) {
-        checkWord();
+        checkWord(context);
       }
     } else if (value == "BACK") {
       if (currenttile > 0 * (currentRow + 1) - 5) {
@@ -36,7 +36,7 @@ class Controller extends ChangeNotifier {
     notifyListeners();
   }
 
-  checkWord() {
+  checkWord(BuildContext context) async {
     List<String> guessed = [], remainingCorrect = [];
     String guessedWord = "";
 
@@ -49,11 +49,19 @@ class Controller extends ChangeNotifier {
     print(remainingCorrect);
 
     if (guessedWord == correctWord) {
-      //!buraya ekleme yapıcan
+      // ! buraya ekleme yapıcan
+      final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+    
+      final availableGames =
+          await firebaseFirestore.collection(Constants.availableGames).get();
+          
+      final List<DocumentSnapshot> gamesList = availableGames.docs
+            .where((element) => element[Constants.isPlaying] == true)
+            .toList();
       
       final userModel = context.read<AuthenticationProvider>().userModel;
-
-      kazanan_guncelle(userModel: userModel);
+      
+      guncelle(context: context, game: gamesList.first, userModel: userModel!);
 
       for (int i = currentRow * 5; i < (currentRow * 5) + 5; i++) {
         tilesEnterad[i].answerStage = AnswerStage.correct;
@@ -83,36 +91,44 @@ class Controller extends ChangeNotifier {
     currentRow++;
     notifyListeners();
   }
-}
 
-void kazanan_guncelle({
-  required UserModel userModel,
-}) async {
-  final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  Future<void> guncelle({
+    required BuildContext context,
+    required DocumentSnapshot<Object?> game,
+    required UserModel userModel,
+  }) async {
+    final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+    // get reference to the game we are joining
+    final opponentsGame = firebaseFirestore
+        .collection(Constants.availableGames)
+        .doc(game[Constants.gameCreatorUid]);
+    // İlk belgeyi al
+    QuerySnapshot availableGamesSnapshot =
+        await firebaseFirestore.collection('availableGames').get();
+      DocumentSnapshot firstDocument = availableGamesSnapshot.docs.first;
 
-  final availableGames =
-      await firebaseFirestore.collection(Constants.availableGames).get();
+      // İlk belgenin referansını al
+      DocumentReference firstDocumentRef = firstDocument.reference;
+    // İlk belgenin verilerini al
+      Map<String, dynamic> firstDocumentData = firstDocument.data() as Map<String, dynamic>;
 
-  final List<DocumentSnapshot> gamesList = availableGames.docs
-      .where((element) => element[Constants.isPlaying] == true)
-      .toList();
+      // gameCreatorName alanını al
+      String gameCreatorName = firstDocumentData['gameCreatorName'];
 
-  final opponentsGame = await firebaseFirestore
-      .collection(Constants.availableGames)
-      .doc(gamesList.first[Constants.gameCreatorUid])
-      .get();
-
-  var gameCreatorName = opponentsGame.data()?[Constants.gameCreatorName];
-
-  if (userModel.name == gameCreatorName) {
-    // FireStore'da oluşturulan oyunu güncelleyin
-    await opponentsGame.update({
+    if (userModel.name == gameCreatorName) {
+      await opponentsGame.update({
       Constants.birinci_kazanan: true,
     });
-  } else {
+    } else {
+      await opponentsGame.update({
+      Constants.ikinci_kazanan: true,
+    });
+    }
     // FireStore'da oluşturulan oyunu güncelleyin
     await opponentsGame.update({
       Constants.ikinci_kazanan: true,
     });
+
+    notifyListeners();
   }
 }

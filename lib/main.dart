@@ -14,10 +14,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => Controller()),
+    providers: [
+      ChangeNotifierProvider(create: (_) => Controller()),
       ChangeNotifierProvider(create: (_) => AuthenticationProvider()),
-      ChangeNotifierProvider(create: (_) => GameProvider())],
-      child: const MyApp()));
+      ChangeNotifierProvider(create: (_) => GameProvider()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

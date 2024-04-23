@@ -7,7 +7,6 @@ import 'package:wordle/components/keyboard_row.dart';
 import 'package:wordle/constants/words.dart';
 import 'package:wordle/data/keys_map.dart';
 import 'package:wordle/providers/authentication_provider.dart';
-
 import '../controller.dart';
 
 class Oyun_ekrani extends StatefulWidget {
@@ -18,18 +17,14 @@ class Oyun_ekrani extends StatefulWidget {
 }
 
 class _Oyun_ekraniState extends State<Oyun_ekrani> {
-
   @override
   void initState() {
     _fetchWord();
-
     super.initState();
   }
 
   void _fetchWord() async {
-
     final userModel = context.read<AuthenticationProvider>().userModel;
-
     String _word = await kelimemiz(userModel: userModel!);
     if (_word != null) {
       setState(() {
@@ -49,21 +44,24 @@ class _Oyun_ekraniState extends State<Oyun_ekrani> {
       appBar: AppBar(
         title: Text("Wordle"),
         centerTitle: true,
+        backgroundColor: Color(0xff833ac8),
+        shadowColor: Color(0xff833ac8),
         elevation: 0,
       ),
+      backgroundColor: Color(0xff21254A),
       body: Column(
         children: [
           Expanded(
             flex: 7,
             child: Container(
-              color: Colors.yellow,
+              color: const Color(0xff21254A),
               child: Grid(),
             ),
           ),
           Expanded(
             flex: 4,
             child: Container(
-              color: Colors.green,
+              color: Color(0xff21254A),
               child: Column(
                 children: [
                   KeyboardRow(min: 1, max: 12),

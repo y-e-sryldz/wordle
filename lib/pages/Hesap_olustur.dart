@@ -45,6 +45,7 @@ class _Hesap_olusturState extends State<Hesap_olustur> {
     var height = MediaQuery.of(context).size.height;
     final authProvider = context.watch<AuthenticationProvider>();
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Color(0xff21254A),
         body: SingleChildScrollView(
@@ -162,56 +163,72 @@ class _Hesap_olusturState extends State<Hesap_olustur> {
                     SizedBox(
                       height: 20,
                     ),
-                    Center(
-                      child: TextButton(
-                        onPressed: () async {
-                          if (username.isEmpty || password.isEmpty) {
-                            if (username.isEmpty &&
-                                password.isEmpty &&
-                                name.isEmpty) {
-                              // Kullanıcı adı ve şifre boşsa, uyarıyı göster.
-                              setState(() {
-                                BosAlanUyarisiIsim = true;
-                                BosAlanUyarisiSifre = true;
-                                BosAlanUyarisiname = true;
-                              });
-                            } else if (username.isEmpty) {
-                              setState(() {
-                                BosAlanUyarisiIsim = true;
-                              });
-                            } else if (password.isEmpty) {
-                              setState(() {
-                                BosAlanUyarisiSifre = true;
-                              });
-                            } else if (name.isEmpty) {
-                              setState(() {
-                                BosAlanUyarisiname = true;
-                              });
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                      Container(
+                        decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                        child: TextButton(
+                          onPressed: () async {
+                            if (username.isEmpty || password.isEmpty) {
+                              if (username.isEmpty &&
+                                  password.isEmpty &&
+                                  name.isEmpty) {
+                                // Kullanıcı adı ve şifre boşsa, uyarıyı göster.
+                                setState(() {
+                                  BosAlanUyarisiIsim = true;
+                                  BosAlanUyarisiSifre = true;
+                                  BosAlanUyarisiname = true;
+                                });
+                              } else if (username.isEmpty) {
+                                setState(() {
+                                  BosAlanUyarisiIsim = true;
+                                });
+                              } else if (password.isEmpty) {
+                                setState(() {
+                                  BosAlanUyarisiSifre = true;
+                                });
+                              } else if (name.isEmpty) {
+                                setState(() {
+                                  BosAlanUyarisiname = true;
+                                });
+                              }
+                            } else {
+                              signUpUser();
                             }
-                          } else {
-                            signUpUser();
-                          }
-                        },
-                        child: Text(
-                          "Hesap Oluştur",
-                          style: TextStyle(color: Colors.pink[200]),
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                            child: Text(
+                              "Hesap Oluştur",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
                     SizedBox(
-                      height: 20,
+                      width: 30,
                     ),
-                    Center(
+                    Container(
+                      decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
                       child: TextButton(
                         onPressed: () {
                           Navigator.pop(context);
                         },
                         child: Text(
                           "Geri Dön",
-                          style: TextStyle(color: Colors.pink[200]),
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
+                    ],),
+                    
                   ],
                 ),
               ),

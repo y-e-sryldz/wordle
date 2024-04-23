@@ -7,86 +7,75 @@ import 'package:wordle/providers/game_provider.dart';
 
 class Odalar extends StatefulWidget {
   const Odalar({
-    super.key,
+    Key? key,
     required this.isCustomTime,
-  });
+  }) : super(key: key);
 
   final bool isCustomTime;
-  final String gameTime = "99";
+
   @override
   State<Odalar> createState() => _OdalarState();
 }
 
 class _OdalarState extends State<Odalar> {
   TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "odalar",
-          style: TextStyle(color: Colors.white),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.black,
+        title: Text("Odalar"),
+        backgroundColor: Color(0xff833ac8),
+        shadowColor: Color(0xff833ac8),
       ),
-      body: Consumer<GameProvider>(builder: (context, gameProvider, child) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: TextField(
+      backgroundColor: Color(0xff21254A),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "5 harflik bir kelime giriniz",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                SizedBox(height: 20),
+                TextField(
                   controller: _controller,
                   decoration: InputDecoration(
-                    hintText: "5 harflik birkelime giriniz",
+                    hintText: "Örnek: kelime",
                     hintStyle: TextStyle(color: Colors.grey),
                     enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                      color: Colors.grey,
-                    )),
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
                   ),
-                  style: TextStyle(
-                      color: Colors.black), // Yazı rengini beyaz yapar
+                  style: TextStyle(color: Colors.white),
                 ),
-              ),
-              SizedBox(
-                height: 15,
-              ),
-              Text("oyuna başlamak için tıklayın"),
-              SizedBox(
-                height: 15,
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // navigate to game screen
-                  playGame(gameProvider: gameProvider);
-                },
-                child: Text('Play'),
-              ),
-            ],
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    playGame(gameProvider: context.read<GameProvider>());
+                  },
+                  child: Text('Oyuna Başla'),
+                ),
+              ],
+            ),
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 
-  void playGame({
-    required GameProvider gameProvider,
-  }) async {
+  void playGame({required GameProvider gameProvider}) async {
     final userModel = context.read<AuthenticationProvider>().userModel;
 
-    print(widget.gameTime);
     final String incrementalTime = "15";
 
-    // get the value before the + sign
     final String whitetime = _controller.text;
     final String blacktime = _controller.text;
 
-    // check if incremental is equal to 0
     if (incrementalTime != '0') {
-      // save the incremental value
       gameProvider.setIncrementalValue(value: int.parse(incrementalTime));
     }
 
@@ -98,41 +87,50 @@ class _OdalarState extends State<Odalar> {
         .whenComplete(() {
       if (gameProvider.vsComputer) {
         gameProvider.setIsLoading(value: false);
-        // 3. navigate to game screen
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => Oyun_ekrani()),
         );
       } else {
-        // search for players
         gameProvider.searchPlayer(
-            userModel: userModel!,
-            onSuccess: () {
-              if (gameProvider.waitingText == Constants.searchingPlayerText) {
-                gameProvider.checkIfOpponentJoined(
-                  userModel: userModel,
-                  onSuccess: () {
-                    gameProvider.setIsLoading(value: false);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-                    );
-                  },
-                );
-              } else {
-                gameProvider.setIsLoading(value: false);
-                // navigate to gameScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Oyun_ekrani()),
-                );
-              }
-            },
-            onFail: (error) {
+          userModel: userModel!,
+          onSuccess: () {
+            if (gameProvider.waitingText == Constants.searchingPlayerText) {
+              gameProvider.checkIfOpponentJoined(
+                userModel: userModel,
+                onSuccess: () {
+                  gameProvider.setIsLoading(value: false);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Oyun_ekrani()),
+                  );
+                },
+              );
+            } else {
               gameProvider.setIsLoading(value: false);
-              print(error);
-            });
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Oyun_ekrani()),
+              );
+            }
+          },
+          onFail: (error) {
+            gameProvider.setIsLoading(value: false);
+            print(error);
+          },
+        );
       }
     });
+  }
+
+  Widget buildAppBar(String title) {
+    return AppBar(
+      title: Text(
+        title,
+        style: TextStyle(color: Colors.white),
+      ),
+      centerTitle: true,
+      backgroundColor: Colors.black,
+    );
   }
 }
